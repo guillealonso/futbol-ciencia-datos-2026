@@ -219,14 +219,16 @@ def convert_actions(events, home_team_id):
 def augment_events(events_df):
     events_df = pd.concat([events_df, get_tagsdf(events_df)], axis=1)
     events_df = make_new_positions(events_df)
-    events_df["type_id"] = (
-        events_df["eventId"] if "eventId" in events_df.columns else events_df.eventName
-    )
-    events_df["subtype_id"] = (
+    events_df["type_id"] = pd.to_numeric(
+        events_df["eventId"] if "eventId" in events_df.columns else events_df.eventName,
+        errors="coerce",
+    ).fillna(-1).astype(int)
+    events_df["subtype_id"] = pd.to_numeric(
         events_df["subEventId"]
         if "subEventId" in events_df.columns
-        else events_df.subEventName
-    )
+        else events_df.subEventName,
+        errors="coerce",
+    ).fillna(-1).astype(int)
     events_df["period_id"] = events_df.matchPeriod.apply(lambda x: wyscout_periods[x])
     events_df["player_id"] = events_df["playerId"]
     events_df["team_id"] = events_df["teamId"]
@@ -333,8 +335,11 @@ def make_position_vars(event_id, positions):
 
 
 def make_new_positions(events_df):
+    cols_to_drop = [c for c in ["start_x", "start_y", "end_x", "end_y"] if c in events_df.columns]
+    if cols_to_drop:
+        events_df = events_df.drop(columns=cols_to_drop)
     new_positions = events_df[["id", "positions"]].apply(
-        lambda x: make_position_vars(x[0], x[1]), axis=1
+        lambda x: make_position_vars(x.iloc[0], x.iloc[1]), axis=1
     )
     new_positions.columns = ["id", "start_x", "start_y", "end_x", "end_y"]
     events_df = pd.merge(events_df, new_positions, left_on="id", right_on="id")
