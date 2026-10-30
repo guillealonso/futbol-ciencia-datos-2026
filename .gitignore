@@ -3,6 +3,9 @@
 /scratch/
 # Datos SPADL generados
 data/spadl/
+data/spadl_5ligas/
+
+notebooks/G0*
 
 # Scripts temporales y de debug
 /scripts/
@@ -19,6 +22,12 @@ __pycache__/
 
 # Entornos virtuales
 .venv/
+entorno-comandos-utiles.md
 
 #Corrección de errores
 /correcciones/
+
+# Repositorio privado local y guías
+.git_privado/
+manejo-de-repos-privado-publico.md
+git-privado.*
